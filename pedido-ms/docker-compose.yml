@@ -1,0 +1,29 @@
+
+services:
+  mongo:
+    container_name: mongo_ecommerce
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ecommerce
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret123
+    networks:
+      - ecommerce
+  
+  rabbitmq:
+    container_name: rabbitmq_ecommerce
+    image: rabbitmq:3.10.23-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: root
+      RABBITMQ_DEFAULT_PASS: secret123
+    networks:
+      - ecommerce
+
+networks:
+  ecommerce:
+    driver: bridge

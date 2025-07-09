@@ -12,3 +12,7 @@ type OrderRepository interface {
 type OrderService interface {
 	Create(ctx *context.Context, order *domain.Order) (*domain.Order, error)
 }
+
+type OrderOutput interface {
+	OrderCreated(ctx *context.Context, order *domain.Order) error
+}

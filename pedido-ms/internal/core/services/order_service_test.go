@@ -14,10 +14,11 @@ func CreateOrder(t *testing.T) {
 	t.Run("Cria pedido", func(t *testing.T) {
 		order := mocks.CreateOrderEntity()
 		orderRepository := mocks.NewOrderRepository(t)
+		orderOutput := mocks.NewOrderOutput()
 
 		orderRepository.On("Create").Return(nil)
 
-		service := services.NewOrderService(orderRepository)
+		service := services.NewOrderService(orderRepository, orderOutput)
 		orderResult, err := service.Create(&ctx, order)
 
 		assert.Nil(t, err)

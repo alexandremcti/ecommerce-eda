@@ -18,3 +18,9 @@
     [x] - criar order
 [] - tornar dtos imutáveis via mapper
     [x] - order
+[] - customizar erros
+    [] - domain
+    [] - services
+    [] - broker
+    [] - database
+    [] - http

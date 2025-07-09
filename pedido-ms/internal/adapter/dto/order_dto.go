@@ -4,6 +4,7 @@ import (
 	"log"
 	"pedido-ms/internal/core/domain"
 	"pedido-ms/internal/core/enum"
+	"time"
 )
 
 type (
@@ -22,6 +23,7 @@ type (
 	}
 
 	CustomerDTO struct {
+		Id              string             `json:"id" binding:"required"`
 		FirstName       string             `json:"first_name" binding:"required"`
 		LastName        string             `json:"last_name" binding:"required"`
 		Email           string             `json:"email" binding:"required"`
@@ -40,9 +42,16 @@ type (
 	}
 
 	OrderDTO struct {
-		Items    []ItemDTO   `json:"items" binding:"required"`
-		Customer CustomerDTO `json:"customer" binding:"required"`
-		Payment  PaymentDTO  `json:"payment" binding:"required"`
+		Id          string      `json:"id,omitempty"`
+		TotalAmount float64     `json:"totalAmount,omitempty"`
+		OrderStatus string      `json:"orderStatus,omitempty"`
+		Qualified   bool        `json:"qualified,omitempty"`
+		Reserved    bool        `json:"reserved,omitempty"`
+		CreatedAt   time.Time   `json:"createdAt,omitempty"`
+		UpdatedAt   time.Time   `json:"updatedAt,omitempty"`
+		Items       []ItemDTO   `json:"items" binding:"required"`
+		Customer    CustomerDTO `json:"customer" binding:"required"`
+		Payment     PaymentDTO  `json:"payment" binding:"required"`
 	}
 )
 
@@ -117,4 +126,53 @@ func (pdto *PaymentDTO) toEntityInput() domain.PaymentParams {
 	}
 
 	return input
+}
+
+func ToDTO(o *domain.OrderParams) *OrderDTO {
+	order := OrderDTO{
+		Id:          o.ID(),
+		TotalAmount: o.TotalAmount,
+		OrderStatus: o.OrderStatus.String(),
+		Qualified:   o.Qualified,
+		Reserved:    o.Reserved,
+		CreatedAt:   o.CreatedAt,
+		UpdatedAt:   o.UpdatedAt,
+	}
+
+	order.Customer = CustomerDTO{
+		Id:        o.Customer.Id,
+		FirstName: o.Customer.FirstName,
+		LastName:  o.Customer.LastName,
+		Email:     o.Customer.Email,
+		DeliveryAddress: DeliveryAddressDTO{
+			Street:     o.Customer.Street,
+			Number:     o.Customer.Streetnumber,
+			PostalCode: o.Customer.PostalCode,
+			City:       o.Customer.Street,
+			State:      o.Customer.State,
+		},
+	}
+
+	order.Items = []ItemDTO{}
+	for _, i := range o.Items {
+		item := ItemDTO{
+			ProductId: i.ProductId,
+			Count:     i.Count,
+			Price:     i.Price,
+		}
+		order.Items = append(order.Items, item)
+	}
+
+	order.Payment = PaymentDTO{
+		CardId:          o.Payment.CardId,
+		Bin:             o.Payment.Bin,
+		NumToken:        o.Payment.NumToken,
+		CardholderName:  o.Payment.CardholderName,
+		SecurityCode:    o.Payment.SecurityCode,
+		ExpirationMonth: o.Payment.ExpirationMonth,
+		ExpirationYear:  o.Payment.ExpirationYear,
+		Brand:           o.Payment.Brand.String(),
+	}
+
+	return &order
 }

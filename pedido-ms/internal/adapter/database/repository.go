@@ -11,7 +11,8 @@ import (
 
 type (
 	OrderRepository struct {
-		db *mongo.Client
+		db   *mongo.Client
+		coll *mongo.Collection
 	}
 
 	ItemEntinty struct {
@@ -62,13 +63,12 @@ type (
 )
 
 func (r *OrderRepository) Create(ctx *context.Context, o *domain.Order) error {
-	collection := r.db.Database("pedidos_db").Collection("orders")
 
 	e := r.mapToORM(o)
 
 	fmt.Println("[Order Repository] Criando order: ", e)
 
-	_, err := collection.InsertOne(*ctx, e)
+	_, err := r.coll.InsertOne(*ctx, e)
 
 	if err != nil {
 		return err
@@ -78,7 +78,8 @@ func (r *OrderRepository) Create(ctx *context.Context, o *domain.Order) error {
 
 func CreateOrderRepository() OrderRepository {
 	r := OrderRepository{
-		db: Client,
+		db:   Client,
+		coll: Client.Database("pedidos_db").Collection("orders"),
 	}
 	return r
 }

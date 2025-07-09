@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"pedido-ms/internal/adapter/broker"
 	"pedido-ms/internal/adapter/config"
 	"pedido-ms/internal/adapter/database"
 	handlers "pedido-ms/internal/adapter/handler/http"
@@ -25,11 +26,22 @@ func main() {
 
 	ctx := context.Background()
 
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	if err := database.CreateConnection(ctx, config.MongoConnectionUrl); err != nil {
 		slog.Error("Error creating database connection", "error", err)
+		os.Exit(1)
+	}
+
+	if err := broker.CreateConnection(config.RabbitHost); err != nil {
+		slog.Error("Error creating broker connection", "error", err)
+		os.Exit(1)
+	}
+
+	err = broker.B.CreatePublishers([]string{"pedido-criado-out-0"})
+	if err != nil {
+		slog.Error("Error creating publisher", "error", err)
 		os.Exit(1)
 	}
 

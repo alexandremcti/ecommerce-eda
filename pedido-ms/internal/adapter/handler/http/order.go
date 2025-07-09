@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"pedido-ms/internal/adapter/broker"
 	"pedido-ms/internal/adapter/database"
 	"pedido-ms/internal/adapter/dto"
 	"pedido-ms/internal/core/domain"
@@ -18,7 +19,8 @@ import (
 func CreateRoutes(r *chi.Mux) {
 	r.Route("/pedidos", func(r chi.Router) {
 		repository := database.CreateOrderRepository()
-		service := services.NewOrderService(&repository)
+		orderOutput := broker.CreateOutputImp(broker.B)
+		service := services.NewOrderService(&repository, &orderOutput)
 		handler := NewOrderHandler(service)
 		r.Post("/", handler.CreateOrder)
 	})

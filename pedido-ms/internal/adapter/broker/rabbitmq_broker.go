@@ -1,52 +1,98 @@
 package broker
 
 import (
-	"pedido-ms/internal/core/domain"
+	"context"
+	"encoding/json"
 
-	"github.com/wagslane/go-rabbitmq"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-var (
-	conn *rabbitmq.Conn
-	err  error
-)
+var B *RabbitMQBrokerPublisher
+
+type NotifyError struct {
+	message string
+}
+
+func (e *NotifyError) Error() string {
+	return e.message
+}
 
 type IBrokerPublisher interface {
-	Notify(bindName string, order domain.Order)
+	CreatePublishers(bindNames []string) error
+	Notify(ctx *context.Context, bindName string, object interface{}) error
 }
 
-type BrokerPublisher struct {
-	publisher *rabbitmq.Publisher
+type RabbitMQBrokerPublisher struct {
+	connection *amqp.Connection
+	chanel     *amqp.Channel
 }
 
-func (b *BrokerPublisher) Notify(order domain.Order) {
-	//b.publisher.Publish([]byte(order))
-}
+func (b *RabbitMQBrokerPublisher) Notify(ctx *context.Context, bindName string, obj interface{}) error {
+	eb, err := json.Marshal(obj)
+	if err != nil {
+		return &NotifyError{message: "Erro ao transformar objeto"}
+	}
 
-func CreatePublisher(bindName string) (*BrokerPublisher, error) {
-	publisher, err := rabbitmq.NewPublisher(
-		conn,
-		rabbitmq.WithPublisherOptionsLogging,
-		rabbitmq.WithPublisherOptionsExchangeName(bindName),
-		rabbitmq.WithPublisherOptionsExchangeDeclare,
+	err = b.chanel.PublishWithContext(*ctx,
+		bindName,
+		"",
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(eb),
+		},
 	)
+	if err != nil {
+		return &NotifyError{message: "Erro ao publicar evento " + bindName}
 
+	}
+	return nil
+}
+
+func CreateConnection(uri string) error {
+	conn, err := amqp.Dial(uri)
+	if err != nil {
+		return err
+	}
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return err
+	}
+
+	B = &RabbitMQBrokerPublisher{
+		connection: conn,
+		chanel:     ch,
+	}
+
+	return nil
+}
+
+func (b *RabbitMQBrokerPublisher) CreatePublishers(bindNames []string) error {
+
+	for _, bindName := range bindNames {
+		err := b.chanel.ExchangeDeclare(
+			bindName,
+			"fanout",
+			true,
+			false,
+			false,
+			false,
+			nil,
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (b *RabbitMQBrokerPublisher) createChannel() (*amqp.Channel, error) {
+	ch, err := b.connection.Channel()
 	if err != nil {
 		return nil, err
 	}
-
-	return &BrokerPublisher{publisher: publisher}, nil
-}
-
-func CreateConnection(uri string) (*rabbitmq.Conn, error) {
-	conn, err = rabbitmq.NewConn(
-		uri,
-		rabbitmq.WithConnectionOptionsLogging,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return conn, nil
+	return ch, nil
 }

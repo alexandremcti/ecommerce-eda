@@ -21,7 +21,9 @@ func CreateRoutes(r *chi.Mux) {
 		repository := database.CreateOrderRepository()
 		orderOutput := broker.CreateOutputImp(broker.B)
 		service := services.NewOrderService(&repository, &orderOutput)
+
 		handler := NewOrderHandler(service)
+
 		r.Post("/", handler.CreateOrder)
 	})
 }

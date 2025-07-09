@@ -76,12 +76,12 @@ func (r *OrderRepository) Create(ctx *context.Context, o *domain.Order) error {
 	return nil
 }
 
-func CreateOrderRepository() OrderRepository {
+func CreateOrderRepository() *OrderRepository {
 	r := OrderRepository{
 		db:   Client,
 		coll: Client.Database("pedidos_db").Collection("orders"),
 	}
-	return r
+	return &r
 }
 
 func (r *OrderRepository) mapToORM(o *domain.Order) *OrderEntity {

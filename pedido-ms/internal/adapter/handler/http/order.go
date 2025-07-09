@@ -5,28 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"pedido-ms/internal/adapter/broker"
-	"pedido-ms/internal/adapter/database"
 	"pedido-ms/internal/adapter/dto"
 	"pedido-ms/internal/core/domain"
 	"pedido-ms/internal/core/port"
-	"pedido-ms/internal/core/services"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 )
-
-func CreateRoutes(r *chi.Mux) {
-	r.Route("/pedidos", func(r chi.Router) {
-		repository := database.CreateOrderRepository()
-		orderOutput := broker.CreateOutputImp(broker.B)
-		service := services.NewOrderService(&repository, &orderOutput)
-
-		handler := NewOrderHandler(service)
-
-		r.Post("/", handler.CreateOrder)
-	})
-}
 
 type OrderHandler struct {
 	service port.OrderService

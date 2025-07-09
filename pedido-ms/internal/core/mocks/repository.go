@@ -3,31 +3,28 @@ package mocks
 import (
 	"context"
 	"pedido-ms/internal/core/domain"
-
-	"github.com/stretchr/testify/mock"
 )
 
-type Repository struct {
-	mock.Mock
+type (
+	OrderMockRepositoryArgs struct {
+		ctx *context.Context
+		o   *domain.Order
+	}
+	OrderMockRepository struct {
+		args   OrderMockRepositoryArgs
+		orders []*domain.Order
+	}
+)
+
+func NewOrderRepository() *OrderMockRepository {
+	r := &OrderMockRepository{}
+	return r
 }
 
-type NewRepositoryT interface {
-	mock.TestingT
-	Cleanup(func())
-}
+func (r *OrderMockRepository) Create(ctx *context.Context, o *domain.Order) error {
+	r.args.ctx = ctx
+	r.args.o = o
+	r.orders = append(r.orders, o)
 
-func (r *Repository) Create(ctx *context.Context, o *domain.Order) error {
-	args := r.Called(ctx, o)
-
-	return args.Error(0)
-
-}
-
-func NewOrderRepository(t NewRepositoryT) *Repository {
-	mock := &Repository{}
-	mock.Mock.Test(t)
-
-	t.Cleanup(func() { mock.AssertExpectations(t) })
-
-	return mock
+	return nil
 }

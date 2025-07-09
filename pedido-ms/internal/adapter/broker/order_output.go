@@ -12,8 +12,8 @@ type (
 	}
 )
 
-func CreateOutputImp(broker IBrokerPublisher) OrderOuputImp {
-	return OrderOuputImp{broker: broker}
+func CreateOutputImp(broker IBrokerPublisher) *OrderOuputImp {
+	return &OrderOuputImp{broker: broker}
 }
 
 func (ooi *OrderOuputImp) OrderCreated(ctx *context.Context, order *domain.Order) error {

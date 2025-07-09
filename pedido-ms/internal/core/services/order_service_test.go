@@ -13,10 +13,8 @@ func CreateOrder(t *testing.T) {
 	ctx := context.Background()
 	t.Run("Cria pedido", func(t *testing.T) {
 		order := mocks.CreateOrderEntity()
-		orderRepository := mocks.NewOrderRepository(t)
+		orderRepository := mocks.NewOrderRepository()
 		orderOutput := mocks.NewOrderOutput()
-
-		orderRepository.On("Create").Return(nil)
 
 		service := services.NewOrderService(orderRepository, orderOutput)
 		orderResult, err := service.Create(&ctx, order)

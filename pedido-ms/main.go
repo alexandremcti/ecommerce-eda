@@ -9,6 +9,7 @@ import (
 	"pedido-ms/internal/adapter/config"
 	"pedido-ms/internal/adapter/database"
 	handlers "pedido-ms/internal/adapter/handler/http"
+	"pedido-ms/internal/core/services"
 
 	"time"
 
@@ -53,7 +54,20 @@ func main() {
 		w.Write([]byte("Wellcome"))
 	})
 
-	handlers.CreateRoutes(r)
+	handlers.CreateRoutes(r, LoadDependencies())
 
 	http.ListenAndServe(":8085", r)
+}
+
+func LoadDependencies() handlers.HandlerDependency {
+	repository := database.CreateOrderRepository()
+	orderOutput := broker.CreateOutputImp(broker.B)
+	orderService := services.NewOrderService(repository, orderOutput)
+	orderHandler := handlers.NewOrderHandler(orderService)
+
+	d := handlers.HandlerDependency{
+		OrderHandler: orderHandler,
+	}
+
+	return d
 }

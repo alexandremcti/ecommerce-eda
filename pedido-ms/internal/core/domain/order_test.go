@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Order(t *testing.T) {
+func TestOrder(t *testing.T) {
 	t.Run("Calcula valor total", func(t *testing.T) {
 		//Arrange
 		orderInput := createOrderInput()

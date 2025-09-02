@@ -10,6 +10,7 @@ import (
 	"pedido-ms/internal/adapter/database"
 	handlers "pedido-ms/internal/adapter/handler/http"
 	"pedido-ms/internal/core/services"
+	"pedido-ms/shared/uow"
 
 	"time"
 
@@ -60,9 +61,15 @@ func main() {
 }
 
 func LoadDependencies() handlers.HandlerDependency {
-	repository := database.CreateOrderRepository()
-	orderOutput := broker.CreateOutputImp(broker.B)
-	orderService := services.NewOrderService(repository, orderOutput)
+	outboxRepository := database.NewOutboxRepository()
+	orderRepository := database.CreateOrderRepository()
+
+	uow := uow.NewUnitOfWork(database.Client)
+
+	uow.Register("OrderRepository", orderRepository)
+	uow.Register("OutboxRepository", outboxRepository)
+
+	orderService := services.NewOrderService(uow)
 	orderHandler := handlers.NewOrderHandler(orderService)
 
 	d := handlers.HandlerDependency{

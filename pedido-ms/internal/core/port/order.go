@@ -16,3 +16,7 @@ type OrderService interface {
 type OrderOutput interface {
 	OrderCreated(ctx *context.Context, order *domain.Order) error
 }
+
+type OutboxRepository interface {
+	Save(ctx *context.Context, entity *domain.OutboxMessage) error
+}

@@ -62,6 +62,14 @@ type (
 	}
 )
 
+func CreateOrderRepository() *OrderRepository {
+	r := OrderRepository{
+		db:   Client,
+		coll: Client.Database("pedidos_db").Collection("orders"),
+	}
+	return &r
+}
+
 func (r *OrderRepository) Create(ctx *context.Context, o *domain.Order) error {
 
 	e := r.mapToORM(o)
@@ -74,14 +82,6 @@ func (r *OrderRepository) Create(ctx *context.Context, o *domain.Order) error {
 		return err
 	}
 	return nil
-}
-
-func CreateOrderRepository() *OrderRepository {
-	r := OrderRepository{
-		db:   Client,
-		coll: Client.Database("pedidos_db").Collection("orders"),
-	}
-	return &r
 }
 
 func (r *OrderRepository) mapToORM(o *domain.Order) *OrderEntity {

@@ -5,17 +5,16 @@ import (
 	"log"
 	"pedido-ms/internal/core/domain"
 	"pedido-ms/internal/core/port"
+	"pedido-ms/shared/uow"
 )
 
 type OrderService struct {
-	orderRepository port.OrderRepository
-	orderOuput      port.OrderOutput
+	uow uow.UOW
 }
 
-func NewOrderService(orderRepository port.OrderRepository, orderOuput port.OrderOutput) *OrderService {
+func NewOrderService(uow uow.UOW) *OrderService {
 	return &OrderService{
-		orderRepository: orderRepository,
-		orderOuput:      orderOuput,
+		uow: uow,
 	}
 }
 
@@ -24,13 +23,46 @@ func (os *OrderService) Create(ctx *context.Context, order *domain.Order) (*doma
 
 	log.Println("[Order Service] Order:", order)
 
-	err := os.orderRepository.Create(ctx, order)
-	if err != nil {
-		return nil, err
-	}
+	err := os.uow.Do(ctx, func(ctx *context.Context, tx uow.TX) error {
+		orderRepository, err := uow.GetAs[port.OrderRepository](tx, "OrderRepository")
+		if err != nil {
+			return err
+		}
 
-	err = os.orderOuput.OrderCreated(ctx, order)
+		err = orderRepository.Create(ctx, order)
+		if err != nil {
+			return err
+		}
+
+		outboxRepository, err := uow.GetAs[port.OutboxRepository](tx, "OutboxRepository")
+		if err != nil {
+			return err
+		}
+
+		ei := domain.EntityIdImp{}
+		ei.GenerateId()
+
+		err = outboxRepository.Save(ctx, &domain.OutboxMessage{
+			Id:        ei.ID(),
+			EventName: "order-created",
+			EventData: struct {
+				OrderId string
+				Order   *domain.OrderParams
+			}{
+				OrderId: order.Map().ID(),
+				Order:   order.Map(),
+			},
+		})
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
+		log.Println("[Order Service] erro ao criar order: ", err)
 		return nil, err
 	}
 

@@ -4,7 +4,7 @@ import { OrderDTO, QualificacaoOutput } from '../../ports/out/qualificacao'
 import { QualificacaoService } from './qualification'
 
 describe("QualificationService", () => {
-    it("Should create a qualification", async () => {
+    it("Should update order status to qualified", async () => {
         const {sut, qualificacaoOutput} = createSut()
         const input = makeInputDTO()
         await sut.create(input)
@@ -12,6 +12,18 @@ describe("QualificationService", () => {
 
         expect(output?.data.id).toBeDefined()
         expect(output?.data.status).toBe('qualificado')
+    })
+
+
+        it("Should update order status to not qualified", async () => {
+        const {sut, qualificacaoOutput} = createSut()
+        const input = makeInputDTO()
+        input.customer.deliveryAddress.state = 'ZZ'
+        await sut.create(input)
+        const output = qualificacaoOutput.orderEvents.find(q => q.data.id === input.id)
+
+        expect(output?.data.id).toBeDefined()
+        expect(output?.data.status).toBe('recusado')
     })
 });
 

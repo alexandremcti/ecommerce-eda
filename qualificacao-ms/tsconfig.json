@@ -1,0 +1,27 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "types": ["node","jest"],
+    "rootDir": ".",
+    "outDir": "./dist",
+    "paths": {
+      "@application/*": ["./src/application/*"],
+      "@shared/*": ["./src/main/shared/*"],
+      "@ports/*": ["./src/ports/*"],
+      "@infrastructure/*": ["./src/infrastructure/*"],
+      "@adapters/*": ["./src/infrastructure/adapters/*"],
+      "@domain/*": ["./src/domain/*"],
+    },
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "build", "coverage/**"]
+}

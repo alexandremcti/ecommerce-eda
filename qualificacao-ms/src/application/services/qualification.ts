@@ -10,9 +10,11 @@ export class QualificacaoService implements QualificacaoServicePort {
         
         const isOrderQualified = STATE.find(({acronym}) => input.customer.deliveryAddress.state)
         if(!isOrderQualified) {
-            await this.qualificacaoOutput.OrderRecused(input)
+            const order = {...input, status: 'recusado'}
+            await this.qualificacaoOutput.OrderRecused(order)
             return
         }
-        await this.qualificacaoOutput.OrderQualified(input)
+        const order = {...input, status: 'qualificado'}
+        await this.qualificacaoOutput.OrderQualified(order)
     }
 }

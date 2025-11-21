@@ -8,7 +8,7 @@ export class QualificacaoService implements QualificacaoServicePort {
 
     async create(input: QualificacaoServicePortInputDTO): Promise<void> {
         
-        const isOrderQualified = STATE.find(({acronym}) => input.customer.deliveryAddress.state)
+        const isOrderQualified = STATE.find(({acronym}) => input.customer.deliveryAddress.state === acronym)
         if(!isOrderQualified) {
             const order = {...input, status: 'recusado'}
             await this.qualificacaoOutput.OrderRecused(order)

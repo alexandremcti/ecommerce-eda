@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker'
+import { faker } from '@faker-js/faker/locale/pt_BR'
 import { QualificacaoServicePortInputDTO } from '../../ports/in/qualificacao'
 import { OrderDTO, QualificacaoOutput } from '../../ports/out/qualificacao'
 import { QualificacaoService } from './qualification'
@@ -76,7 +76,7 @@ const makeInputDTO = (): QualificacaoServicePortInputDTO => {
                 street: faker.location.street(),
                 number: faker.number.int({min: 1, max: 1000}),
                 city: faker.location.city(),
-                state: faker.location.state(),
+                state: faker.location.state({abbreviated: true }),
                 postalCode: faker.location.zipCode()
             }
         },
